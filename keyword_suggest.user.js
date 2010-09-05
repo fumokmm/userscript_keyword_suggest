@@ -94,6 +94,7 @@
 					var newList = resultToList(eval(httpObj.responseText))
 					for (var i = 0; i < sug.candidateList.length; i++) newList.push(sug.candidateList[i])
 					sug.candidateList = newList.unique()
+					sug.checkLoop()
 				}
 			});
 		}
