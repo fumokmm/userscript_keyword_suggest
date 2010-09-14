@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           keyword_suggest
+// @name           hatena_haiku_keyword_suggest
 // @namespace      http://d.hatena.ne.jp/fumokmm/
-// @description    Keyword Suggest
+// @description    hatena_haiku_Keyword Suggest
 // @include        http://h.hatena.ne.jp/*
 // @include        http://h.hatena.com/*
 // @exclude        http://h.hatena.ne.jp/id/*
