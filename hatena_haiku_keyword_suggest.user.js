@@ -234,37 +234,19 @@
 	
 	  _search: function(text) {
 		var func = this.createSuggestArea
+		var sug = this
 		var callCreateSuggestArea = function(resultList) {
-			if (resultList.length != 0) func(resultList);
+			if (resultList.length != 0) func(resultList, sug);
 			var temp; 
-			this.suggestIndexList = [];
+			sug.suggestIndexList = [];
 	
-			for (var i = 0, length = this.candidateList.length; i < length; i++) {
+			for (var i = 0, length = sug.candidateList.length; i < length; i++) {
 				resultList.push(temp);
-				this.suggestIndexList.push(i);
-				if (this.dispMax != 0 && resultList.length >= this.dispMax) break;
+				sug.suggestIndexList.push(i);
+				if (sug.dispMax != 0 && resultList.length >= sug.dispMax) break;
 			}
 		}
 		requestKeywordList(callCreateSuggestArea)
-	  },
-	
-	  isMatch: function(value, pattern) {
-	
-		if (value == null) return null;
-	
-		var pos = (this.ignoreCase) ?
-		  value.toLowerCase().indexOf(pattern.toLowerCase())
-		  : value.indexOf(pattern);
-	
-		if ((pos == -1) || (this.prefix && pos != 0)) return null;
-	
-		if (this.highlight) {
-		  return (this._escapeHTML(value.substr(0, pos)) + '<strong>' 
-				 + this._escapeHTML(value.substr(pos, pattern.length)) 
-				   + '</strong>' + this._escapeHTML(value.substr(pos + pattern.length)));
-		} else {
-		  return this._escapeHTML(value);
-		}
 	  },
 	
 	  clearSuggestArea: function() {
@@ -275,26 +257,28 @@
 		this.activePosition = null;
 	  },
 	
-	  createSuggestArea: function(resultList) {
-		alert(resultList + ": " + resultList.length)
+	  createSuggestArea: function(resultList, sug) {
+		GM_log("1: " + resultList.length)
+		var target = sug ? sug : this
 	
-		this.suggestList = [];
-		this.inputValueBackup = this.input.value;
+		target.suggestList = [];
+		target.inputValueBackup = target.input.value
 	
 		for (var i = 0, length = resultList.length; i < length; i++) {
-		  var element = document.createElement(this.listTagName);
+		  GM_log("2: " + resultList[i]);
+		  var element = document.createElement(target.listTagName);
 		  element.innerHTML = resultList[i];
-		  this.suggestArea.appendChild(element);
+		  target.suggestArea.appendChild(element);
 	
-		  this._addEvent(element, 'click', this._bindEvent(this.listClick, i));
-		  this._addEvent(element, 'mouseover', this._bindEvent(this.listMouseOver, i));
-		  this._addEvent(element, 'mouseout', this._bindEvent(this.listMouseOut, i));
+		  target._addEvent(element, 'click', target._bindEvent(target.listClick, i));
+		  target._addEvent(element, 'mouseover', target._bindEvent(target.listMouseOver, i));
+		  target._addEvent(element, 'mouseout', target._bindEvent(target.listMouseOut, i));
 	
-		  this.suggestList.push(element);
+		  target.suggestList.push(element);
 		}
 	
-		alert(this.suggestList)
-		this.suggestArea.style.display = '';
+		GM_log("3 " + target.suggestList)
+		target.suggestArea.style.display = '';
 	  },
 	
 	  getInputText: function() {
@@ -515,80 +499,6 @@
 		return value.replace(/\&/g, '&amp;').replace( /</g, '&lt;').replace(/>/g, '&gt;')
 				 .replace(/\"/g, '&quot;').replace(/\'/g, '&#39;');
 	  }
-	};
-	
-	/*-- Suggest.LocalMulti ---------------------------------*/
-	Suggest.LocalMulti = function() {
-	  this.initialize.apply(this, arguments);
-	};
-	Suggest.copyProperties(Suggest.LocalMulti.prototype, Suggest.Local.prototype);
-	
-	Suggest.LocalMulti.prototype.delim = ' '; // delimiter
-	
-	Suggest.LocalMulti.prototype.keyEventReturn = function() {
-	
-	  this.clearSuggestArea();
-	  this.input.value += this.delim;
-	  this.moveEnd();
-	};
-	
-	Suggest.LocalMulti.prototype.keyEventOther = function(event) {
-	
-	  if (event.keyCode == Suggest.Key.TAB) {
-		// fix
-		if (this.suggestList && this.suggestList.length != 0) {
-		  this._stopEvent(event);
-	
-		  if (!this.activePosition) {
-			this.activePosition = 0;
-			this.changeActive(this.activePosition);
-		  }
-	
-		  this.clearSuggestArea();
-		  this.input.value += this.delim;
-		  if (window.opera) {
-			setTimeout(this._bind(this.moveEnd), 5);
-		  } else {
-			this.moveEnd();
-		  }
-		}
-	  }
-	};
-	
-	Suggest.LocalMulti.prototype.listClick = function(event, index) {
-	
-	  this.changeUnactive();
-	  this.activePosition = index;
-	  this.changeActive(index);
-	
-	  this.input.value += this.delim;
-	  this.moveEnd();
-	};
-	
-	Suggest.LocalMulti.prototype.getInputText = function() {
-	
-	  var pos = this.getLastTokenPos();
-	
-	  if (pos == -1) {
-		return this.input.value;
-	  } else {
-		return this.input.value.substr(pos + 1);
-	  }
-	};
-	
-	Suggest.LocalMulti.prototype.setInputText = function(text) {
-	
-	  var pos = this.getLastTokenPos();
-	
-	  if (pos == -1) {
-		this.input.value = text;
-	  } else {
-		this.input.value = this.input.value.substr(0 , pos + 1) + text;
-	  }
-	};
-	
-	Suggest.LocalMulti.prototype.getLastTokenPos = function() {
-	  return this.input.value.lastIndexOf(this.delim);
 	};
 	
 	// --------------------------------------------------------------
