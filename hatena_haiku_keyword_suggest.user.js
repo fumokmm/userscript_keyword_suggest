@@ -80,11 +80,9 @@
 		window.addEventListener ?
 			window.addEventListener('load', start, false) :
 			window.attachEvent('onload', start)
-			
-		window.setInterval(function(){ requestKeywordList() }, 500)
 	}
 	
-	function requestKeywordList() {
+	function requestKeywordList(callback) {
 		if (searchKeyword != keywordInput.value) {
 			searchKeyword = keywordInput.value
 			GM_xmlhttpRequest({
@@ -92,9 +90,7 @@
 				url   : 'http://h.hatena.ne.jp/api/keywords/list.json?word=' + searchKeyword,
 				onload: function(httpObj) {
 					var newList = resultToList(eval(httpObj.responseText))
-					for (var i = 0; i < sug.candidateList.length; i++) newList.push(sug.candidateList[i])
-					sug.candidateList = newList.unique()
-					sug.checkLoop()
+					callback(newList) // コールバック関数を呼び出し
 				}
 			});
 		}
@@ -166,6 +162,7 @@
 	
 		this.input = this._getElement(input);
 		this.suggestArea = this._getElement(suggestArea);
+		
 		this.candidateList = candidateList;
 		this.oldText = this.getInputText();
 	
@@ -232,25 +229,23 @@
 		if (text == '' || text == null) return;
 	
 		this.hookBeforeSearch(text);
-		var resultList = this._search(text);
-		if (resultList.length != 0) this.createSuggestArea(resultList);
+		this._search(text);
 	  },
 	
 	  _search: function(text) {
+		var func = this.createSuggestArea
+		var callCreateSuggestArea = function(resultList) {
+			if (resultList.length != 0) func(resultList);
+			var temp; 
+			this.suggestIndexList = [];
 	
-		var resultList = [];
-		var temp; 
-		this.suggestIndexList = [];
-	
-		for (var i = 0, length = this.candidateList.length; i < length; i++) {
-		  if ((temp = this.isMatch(this.candidateList[i], text)) != null) {
-			resultList.push(temp);
-			this.suggestIndexList.push(i);
-	
-			if (this.dispMax != 0 && resultList.length >= this.dispMax) break;
-		  }
+			for (var i = 0, length = this.candidateList.length; i < length; i++) {
+				resultList.push(temp);
+				this.suggestIndexList.push(i);
+				if (this.dispMax != 0 && resultList.length >= this.dispMax) break;
+			}
 		}
-		return resultList;
+		requestKeywordList(callCreateSuggestArea)
 	  },
 	
 	  isMatch: function(value, pattern) {
@@ -281,6 +276,7 @@
 	  },
 	
 	  createSuggestArea: function(resultList) {
+		alert(resultList + ": " + resultList.length)
 	
 		this.suggestList = [];
 		this.inputValueBackup = this.input.value;
@@ -297,6 +293,7 @@
 		  this.suggestList.push(element);
 		}
 	
+		alert(this.suggestList)
 		this.suggestArea.style.display = '';
 	  },
 	
@@ -321,7 +318,7 @@
 			&& event.keyCode == Suggest.Key.DOWN) {
 		  // dispAll
 		  this._stopEvent(event);
-		  this.keyEventDispAll();
+		 // this.keyEventDispAll();
 		} else if (event.keyCode == Suggest.Key.UP ||
 				   event.keyCode == Suggest.Key.DOWN) {
 		  // key move
