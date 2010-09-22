@@ -27,6 +27,7 @@
 			border: 1px solid #CCCCFF;
 			font-size: 90%;
 			width: 300px;
+		    z-index: 1;
 		}
 		#suggest div {
 			display: block;
