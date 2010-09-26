@@ -62,7 +62,6 @@
 		return nodes
 	}
 		
-	var sug
 	var searchKeyword = ''
 	var keywordInput = xpath("//input[@type='text' and @name='word' and @class='text']")[0]
 	
@@ -77,7 +76,7 @@
 		keywordInput.setAttribute('id', 'keywordInput')
 
 		// wondowのonloadイベントでSuggestを生成
-		var start = function(){ sug = new Suggest.Local("keywordInput", "suggest", []) }
+		var start = function(){ new Suggest.Local("keywordInput", "suggest", []) }
 		window.addEventListener ?
 			window.addEventListener('load', start, false) :
 			window.attachEvent('onload', start)
@@ -200,7 +199,6 @@
 	  },
 	
 	  inputBlur: function() {
-	
 		this.changeUnactive();
 		this.oldText = this.getInputText();
 	
@@ -221,7 +219,6 @@
 	  },
 	
 	  search: function() {
-	
 		// init
 		this.clearSuggestArea();
 	
@@ -235,19 +232,16 @@
 	
 	  _search: function(text) {
 		var func = this.createSuggestArea
-		var sug = this
-		var callCreateSuggestArea = function(resultList) {
-			if (resultList.length != 0) func(resultList, sug);
-			var temp; 
-			sug.suggestIndexList = [];
-	
-			for (var i = 0, length = sug.candidateList.length; i < length; i++) {
-				resultList.push(temp);
-				sug.suggestIndexList.push(i);
-				if (sug.dispMax != 0 && resultList.length >= sug.dispMax) break;
+		var self = this
+		requestKeywordList(function(resultList) {
+			if (resultList.length != 0) func(resultList, self);
+			self.candidateList = resultList
+			self.suggestIndexList = [];
+			for (var i = 0, length = self.candidateList.length; i < length; i++) {
+				self.suggestIndexList.push(i);
+				if (self.dispMax != 0 && resultList.length >= self.dispMax) break;
 			}
-		}
-		requestKeywordList(callCreateSuggestArea)
+		})
 	  },
 	
 	  clearSuggestArea: function() {
@@ -258,9 +252,9 @@
 		this.activePosition = null;
 	  },
 	
-	  createSuggestArea: function(resultList, sug) {
+	  createSuggestArea: function(resultList, self) {
 		GM_log("1: " + resultList.length)
-		var target = sug ? sug : this
+		var target = self ? self : this
 	
 		target.suggestList = [];
 		target.inputValueBackup = target.input.value
@@ -292,7 +286,6 @@
 	
 	  // key event
 	  keyEvent: function(event) {
-	
 		if (!this.timerId) {
 		  this.timerId = setTimeout(this._bind(this.checkLoop), this.interval);
 		}
@@ -329,7 +322,6 @@
 	  },
 	
 	  keyEventDispAll: function() {
-	
 		// init
 		this.clearSuggestArea();
 	
@@ -344,7 +336,6 @@
 	  },
 	
 	  keyEventMove: function(keyCode) {
-	
 		this.changeUnactive();
 	
 		if (keyCode == Suggest.Key.UP) {
@@ -378,34 +369,27 @@
 	  },
 	
 	  keyEventReturn: function() {
-	
 		this.clearSuggestArea();
 		this.moveEnd();
 	  },
 	
 	  keyEventEsc: function() {
-	
 		this.clearSuggestArea();
 		this.input.value = this.inputValueBackup;
 		this.oldText = this.getInputText();
-	
 		if (window.opera) setTimeout(this._bind(this.moveEnd), 5);
 	  },
 	
 	  keyEventOther: function(event) {},
 	
 	  changeActive: function(index) {
-	
 		this.setStyleActive(this.suggestList[index]);
-	
 		this.setInputText(this.candidateList[this.suggestIndexList[index]]);
-	
 		this.oldText = this.getInputText();
 		this.input.focus();
 	  },
 	
 	  changeUnactive: function() {
-	
 		if (this.suggestList != null 
 			&& this.suggestList.length > 0
 			&& this.activePosition != null) {
@@ -414,11 +398,9 @@
 	  },
 	
 	  listClick: function(event, index) {
-	
 		this.changeUnactive();
 		this.activePosition = index;
 		this.changeActive(index);
-	
 		this.moveEnd();
 	  },
 	
@@ -427,11 +409,8 @@
 	  },
 	
 	  listMouseOut: function(event, index) {
-	
 		if (!this.suggestList) return;
-	
 		var element = this._getEventElement(event);
-	
 		if (index == this.activePosition) {
 		  this.setStyleActive(element);
 		}else{
@@ -452,7 +431,6 @@
 	  },
 	
 	  moveEnd: function() {
-	
 		if (this.input.createTextRange) {
 		  this.input.focus(); // Opera
 		  var range = this.input.createTextRange();
