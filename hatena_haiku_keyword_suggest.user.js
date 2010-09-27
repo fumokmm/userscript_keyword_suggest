@@ -219,30 +219,26 @@
 	  },
 	
 	  search: function() {
-		// init
-		this.clearSuggestArea();
-	
 		var text = this.getInputText();
-	
 		if (text == '' || text == null) return;
-	
 		this.hookBeforeSearch(text);
 		this._search(text);
 	  },
 	
 	  _search: function(text) {
-		var func = this.createSuggestArea
 		var self = this
+		var func = function(resultList) {
+		  self.clearSuggestArea()
+		  self.createSuggestArea(resultList, self)
+		}
 		requestKeywordList(function(resultList) {
-			if (resultList.length != 0) func(resultList, self);
-			self.candidateList = resultList
+			if (resultList.length != 0) func(resultList)
+			self.candidateList = self._take(resultList, self.dispMax)
 			self.suggestIndexList = [];
-			//alert(self.candidateList.length + ":" + self.dispMax + ":" + resultList.length)
-			for (var i = 0, length = self.candidateList.length; i < length; i++) {
-				if (self.dispMax != 0 && i >= self.dispMax) break;
+			for (var i = 0, length = self.candidateList.length; i < length && i < self.dispMax; i++) {
 				self.suggestIndexList.push(i);
 			}
-		    //alert(self.suggestIndexList.length)
+		    //alert(self.candidateList + "/" + self.suggestIndexList)
 		})
 	  },
 	
@@ -479,6 +475,13 @@
 	  _escapeHTML: function(value) {
 		return value.replace(/\&/g, '&amp;').replace( /</g, '&lt;').replace(/>/g, '&gt;')
 				 .replace(/\"/g, '&quot;').replace(/\'/g, '&#39;');
+	  },
+	  _take: function(list, num) {
+	    var newList = []
+		for (var i = 0; i < num && i < list.length; i++) {
+	      newList.push(list[i]) 
+		}
+		return newList
 	  }
 	};
 	
