@@ -237,10 +237,12 @@
 			if (resultList.length != 0) func(resultList, self);
 			self.candidateList = resultList
 			self.suggestIndexList = [];
+			//alert(self.candidateList.length + ":" + self.dispMax + ":" + resultList.length)
 			for (var i = 0, length = self.candidateList.length; i < length; i++) {
+				if (self.dispMax != 0 && i >= self.dispMax) break;
 				self.suggestIndexList.push(i);
-				if (self.dispMax != 0 && resultList.length >= self.dispMax) break;
 			}
+		    //alert(self.suggestIndexList.length)
 		})
 	  },
 	
